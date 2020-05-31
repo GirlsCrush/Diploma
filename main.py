@@ -3,7 +3,7 @@ from spatial import SpatialPriceEqulibrium
 
 def main():
     BipatitePriceEqulibrium()
-    SpatialPriceEqulibrium()
+    # SpatialPriceEqulibrium()
 
 
 if __name__ == "__main__":

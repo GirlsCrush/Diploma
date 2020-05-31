@@ -2,6 +2,7 @@ import classes as cl
 import numpy as np
 from methods import Korpelevich, KorpelevichAdapt, MalTam, MalTamAdapt
 import time
+import sys
 
 sup_amnt = 2
 dem_amnt = 2
@@ -54,13 +55,16 @@ def operator2(point):
             res[i * sup_amnt + j] = sup[i] - req_sup_n_dem[i] + dem[j] - req_sup_n_dem[sup_amnt + j]
     return res
 
+# def error(point):
+#     sup_n_dem = np.zeros(sup_amnt + dem_amnt)
+#     for i in range(0, sup_amnt):
+#         for j in range(0, dem_amnt):
+#             sup_n_dem[i]            += point[i * sup_amnt + j]
+#             sup_n_dem[sup_amnt + j] += point[i * sup_amnt + j]
+#     print("Error: " + str(np.linalg.norm(req_sup_n_dem - sup_n_dem)))
+
 def error(point):
-    sup_n_dem = np.zeros(sup_amnt + dem_amnt)
-    for i in range(0, sup_amnt):
-        for j in range(0, dem_amnt):
-            sup_n_dem[i]            += point[i * sup_amnt + j]
-            sup_n_dem[sup_amnt + j] += point[i * sup_amnt + j]
-    print("Error: " + str(np.linalg.norm(req_sup_n_dem - sup_n_dem)))
+    return np.linalg.norm(point - np.array([1.5, 1.5, 0, 2]))
 
 def BipatitePriceEqulibrium():
     print("Norm: " + str(norm))
@@ -73,21 +77,36 @@ def BipatitePriceEqulibrium():
     space = cl.HalfSpaceSet(spaces)
     space.dim = dim
 
-    print("Korpelevich Method:")
-    normal_res = Korpelevich(space, A1)
-    error(normal_res[0])
+    l_list = np.arange(0.5, 0, -0.01)
+    tau_list = np.arange(0.5, 1, 0.01)
+    # l_list = [0.5]
+    # tau_list = [0.9]
+    methods = [
+        ["Korp", Korpelevich, False],
+        ["KorpAdapt", KorpelevichAdapt, True],
+        ["MalTam", MalTam, False],
+        ["MalTamAdapt", MalTamAdapt, True]
+    ]
 
-    print("Korpelevich Adapt Method:")
-    normal_res = KorpelevichAdapt(space, A1)
-    error(normal_res[0])
+    for method in methods:
+        min_iter_amnt = sys.maxsize
+        for l in l_list:
+            for tau in tau_list:
+                res, iter_amnt, el_time = method[1](space, A1, l, tau)
+                if min_iter_amnt > iter_amnt:
+                    min_iter_amnt = iter_amnt
+                    f_name = "Bipartitie_" + method[0]
+                    f = open(f_name + ".txt", "w")
+                    f.write("\nResult:\n" + str(res))
+                    f.write("\nIteration amount:\n" + str(iter_amnt))
+                    f.write("\nElapsed time:\n" + str(el_time))
+                    f.write("\nError:\n" + str(error(res)))
+                    f.write("\nLambda:\n" + str(l))
+                    f.write("\nTau:\n" + str(tau))
+                    f.close()
+                if not method[2]:
+                    break
 
-    print("MalTam Method:")
-    normal_res = MalTam(space, A1)
-    error(normal_res[0])
-
-    print("MalTam Adapt Method:")
-    normal_res = MalTamAdapt(space, A1)
-    error(normal_res[0])
 
     # print("Ordinary Method:")
     # normal_res = Korpelevich2(space, A1, A2)

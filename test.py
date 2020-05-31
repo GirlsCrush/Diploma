@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import matplotlib.pyplot as plt
 plt.figure(1)                # the first figure
 plt.subplot(211)             # the first subplot in the first figure
 plt.plot([1, 2, 3])
